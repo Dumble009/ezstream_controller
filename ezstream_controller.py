@@ -41,6 +41,7 @@ def newStream(xmlFileName='ezstream.xml', pidFileName='pid.txt'):
     # 少し待ってログインに失敗している(プロセスが死んでいる)場合は再度プロセスを起動する
     time.sleep(0.5)
     if not isEzstreamExist(pidFileName):
+        print('reopen new stream')
         newStream(xmlFileName, pidFileName)
 
 
