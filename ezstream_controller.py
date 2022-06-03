@@ -15,7 +15,11 @@ def createPlayLists(playlist):
     with open('/music/playlist.txt', 'w') as f:
         ids = playlist.split('\n')
         for id in ids:
-            f.write(f'/mp3/{id}.mp3')
+            p = f'/mp3/{id}.mp3'
+            if not os.path.exists(p):
+                return False
+            f.write(p)
+    return True
 
 
 def change():
@@ -43,6 +47,7 @@ def newStream(xmlFileName='ezstream.xml', pidFileName='pid.txt'):
     if not isEzstreamExist(pidFileName):
         print('reopen new stream')
         newStream(xmlFileName, pidFileName)
+    
 
 
 def isEzstreamExist(pidFileName='pid.txt'):
@@ -51,10 +56,11 @@ def isEzstreamExist(pidFileName='pid.txt'):
 
 # finishedレスポンスを返し続けないようにするためのフラグ
 isOnceFinishSent = True
-
+FINISHED = 'finished'
 
 async def accept(websocket):
     global isOnceFinishSent
+    global FINISHED
     async for message in websocket:
         print(message)
         sp = message.split(':')
@@ -62,18 +68,21 @@ async def accept(websocket):
         playlist = sp[1]
         if command == 'play':
             isOnceFinishSent = False
-            createPlayLists(playlist)
-            if isEzstreamExist():
-                change()
+            isExist = createPlayLists(playlist)
+            if not isExist:
+                await websocket.send(FINISHED)
             else:
-                newStream()
+                if isEzstreamExist():
+                    change()
+                else:
+                    newStream()
         elif command == 'kill':
             isOnceFinishSent = True
             killStream()
         else:
             ret = 'alive'
             if (not isEzstreamExist()) and (not isOnceFinishSent):
-                ret = 'finished'
+                ret = FINISHED
                 isOnceFinishSent = True
             print(ret)
             await websocket.send(ret)
