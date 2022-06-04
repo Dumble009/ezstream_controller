@@ -57,7 +57,7 @@ dt_now = datetime.datetime.now()
 log_filename = f"/mp3/ezstream_controller-{dt_now.year}{dt_now.month}{dt_now.day}-{dt_now.hour}{dt_now.minute}{dt_now.second}.txt"
 def log(msg):
     print(msg)
-    with open(log_filename, 'w') as f:
+    with open(log_filename, 'a') as f:
         f.write(msg + "\n")
 
 
